@@ -2,6 +2,7 @@ using System.Numerics;
 using System.Reflection;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
+using FFXIVClientStructs.FFXIV.Client.System.Input;
 using OtterGui;
 using OtterGui.Raii;
 
@@ -31,6 +32,7 @@ public class MainWindow : Window
         }
     }
 
+    private InputId _lastSelected = 0;
     private void DrawProfile(KeybindProfile selectorCurrent)
     {
         using var child = ImRaii.Child("Profile", new Vector2(0, 0), true, ImGuiWindowFlags.None);
@@ -45,24 +47,118 @@ public class MainWindow : Window
             selectorCurrent.PopulateFromGame();
             _config.Save();
         }
-        foreach (var bind in selectorCurrent.Keybinds)
+
+        if (!hotkeysHeld)
         {
-            ImGui.Text(bind.Key.ToString());
-            ImGui.Text("Keyboard:");
+            ImGui.SameLine();
+            ImGui.TextDisabled("Hold Ctrl to enable buttons");
+        }
+
+        if (ImGuiUtil.GenericEnumCombo<InputId>("Add New Binding", 100f, _lastSelected, out var inputId))
+        {
+            _lastSelected = inputId;
+            selectorCurrent.Keybinds.TryAdd(inputId, new Keybind());
+            _config.Save();
+        }
+        
+        using var child2 = ImRaii.Child("Keybinds", new Vector2(0, 0), true, ImGuiWindowFlags.None);
+        foreach (var keybind in selectorCurrent.Keybinds)
+        {
+            using var id = ImRaii.PushId(keybind.Key.ToString());
+            ImGui.Text(keybind.Key.ToString());
             ImGui.Indent();
-            foreach (var keybind in bind.Value.KeySettings)
+            var bind = keybind.Value;
+            if (DrawBinding(ref bind))
             {
-                ImGui.Text($"{keybind.Key} {keybind.KeyModifier}");
-            }
-            ImGui.Unindent();
-            ImGui.Text("Gamepad:");
-            ImGui.Indent();
-            foreach (var controllerBind in bind.Value.GamepadSettings)
-            {
-                ImGui.Text($"{controllerBind.Key} {controllerBind.KeyModifier}");
+                selectorCurrent.Keybinds[keybind.Key] = bind;
+                _config.Save();
             }
             ImGui.Unindent();
             ImGui.Separator();
         }
+    }
+
+    private bool DrawBinding(ref Keybind bind)
+    {
+        var changed = false;
+        ImGui.PushID("Key1");
+        ImGui.Text("Key 1: ");
+        ImGui.Indent();
+        if (DrawKey(ref bind.KeySettings[0]))
+        {
+            changed = true;
+        }
+        ImGui.Unindent();
+        ImGui.PopID();
+        ImGui.PushID("Key2");
+        ImGui.Text("Key 2: ");
+        ImGui.Indent();
+        if (DrawKey(ref bind.KeySettings[1]))
+        {
+            changed = true;
+        }
+        ImGui.Unindent();
+        ImGui.PopID();
+        ImGui.PushID("Game1");
+        ImGui.Text("Gamepad 1: ");
+        ImGui.Indent();
+        if (DrawGamepad(ref bind.GamepadSettings[0]))
+        {
+            changed = true;
+        }
+        ImGui.Unindent();
+        ImGui.PopID();
+        ImGui.PushID("Game2");
+        ImGui.Text("Gamepad 2: ");
+        ImGui.Indent();
+        if (DrawGamepad(ref bind.GamepadSettings[1]))
+        {
+            changed = true;
+        }
+        ImGui.Unindent();
+        ImGui.PopID();
+        return changed;
+    }
+    
+    private bool DrawKey(ref KeySetting setting)
+    {
+        var changed = false;
+
+        if (ImGuiUtil.GenericEnumCombo("Modifier", 150f, setting.KeyModifier, out KeyModifierFlag mod))
+        {
+            setting.KeyModifier = mod;
+            changed = true;
+        }
+
+        ImGui.SameLine();
+
+        if (ImGuiUtil.GenericEnumCombo("Key", 150f, setting.Key, out SeVirtualKey key))
+        {
+            setting.Key = key;
+            changed = true;
+        }
+
+        return changed;
+    }
+
+    private bool DrawGamepad(ref KeySetting setting)
+    {
+        var changed = false;
+
+        if (ImGuiUtil.GenericEnumCombo("Modifier", 150f, setting.GamepadModifier, out GamepadModifierFlag mod))
+        {
+            setting.GamepadModifier = mod;
+            changed = true;
+        }
+
+        ImGui.SameLine();
+
+        if (ImGuiUtil.GenericEnumCombo("Key", 150f, setting.Key, out SeVirtualKey key))
+        {
+            setting.Key = key;
+            changed = true;
+        }
+
+        return changed;
     }
 }
