@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Keebler/Keebler.csproj" />
+  <Project Path="OtterGui/OtterGui.csproj">
+    <Platform Project="x64" />
+  </Project>
+</Solution>

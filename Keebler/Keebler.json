@@ -1,0 +1,21 @@
+{
+  "Author": "Rem",
+  "Name": "Keebler",
+  "InternalName": "Keebler",
+  "Description": "Keebler allows you to save, store, and manager your keybinds and share them with your friends!",
+  "ApplicableVersion": "any",
+  "DalamudApiLevel": 15,
+  "TestingDalamudApiLevel": 15,
+  "Tags": [
+    "Keybinds",
+    "Keybind Manager",
+    "Sharing",
+    "Utility"
+  ],
+  "CategoryTags": [
+    "Utility"
+  ],
+  "IsTestingExclusive": false,
+  "Punchline": "Keybind management and sharing",
+  "AcceptsFeedback": true
+}
