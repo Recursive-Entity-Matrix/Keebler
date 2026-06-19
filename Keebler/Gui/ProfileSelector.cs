@@ -1,4 +1,5 @@
 using Dalamud.Bindings.ImGui;
+using Keebler.Models;
 using Newtonsoft.Json;
 using OtterGui;
 

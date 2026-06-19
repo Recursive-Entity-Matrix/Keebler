@@ -1,7 +1,7 @@
 using FFXIVClientStructs.FFXIV.Client.System.Input;
 using FFXIVClientStructs.FFXIV.Client.UI;
 
-namespace Keebler;
+namespace Keebler.Models;
 
 public class KeybindProfile
 {
@@ -9,7 +9,7 @@ public class KeybindProfile
     public string Name { get; set; } = "New Keybind Profile";
     public string? Description { get; set; }
     
-    public Dictionary<InputId, Keybind> Keybinds { get; } = new();
+    public Dictionary<InputId, KeybindDto> Keybinds { get; } = new();
     
     public unsafe void SetKeybinds()
     {
@@ -17,9 +17,8 @@ public class KeybindProfile
         {
             try
             {
-                var kb = keybind.Value;
-                var kbPtr = &kb;
-                UIInputData.Instance()->SetKeybind(keybind.Key, kbPtr);
+                var cs = keybind.Value.ToCsKeybind();
+                UIInputData.Instance()->SetKeybind(keybind.Key, &cs);
             }
             catch (Exception e)
             {
@@ -40,7 +39,7 @@ public class KeybindProfile
                 if (bindPtr == null)
                     continue;
                 Keybind bind = *bindPtr;
-                Keybinds.Add(key, bind);
+                Keybinds.Add(key, bind.ToKeybindDto());
             }
             catch (Exception e)
             {

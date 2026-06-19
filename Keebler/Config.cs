@@ -1,4 +1,5 @@
 using Dalamud.Configuration;
+using Keebler.Models;
 using Newtonsoft.Json;
 
 namespace Keebler;

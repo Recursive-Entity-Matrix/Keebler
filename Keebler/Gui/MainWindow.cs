@@ -3,6 +3,7 @@ using System.Reflection;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
 using FFXIVClientStructs.FFXIV.Client.System.Input;
+using Keebler.Models;
 using OtterGui;
 using OtterGui.Raii;
 
@@ -57,7 +58,7 @@ public class MainWindow : Window
         if (ImGuiUtil.GenericEnumCombo<InputId>("Add New Binding", 100f, _lastSelected, out var inputId))
         {
             _lastSelected = inputId;
-            selectorCurrent.Keybinds.TryAdd(inputId, new Keybind());
+            selectorCurrent.Keybinds.TryAdd(inputId, new KeybindDto());
             _config.Save();
         }
         
@@ -78,7 +79,7 @@ public class MainWindow : Window
         }
     }
 
-    private bool DrawBinding(ref Keybind bind)
+    private bool DrawBinding(ref KeybindDto bind)
     {
         var changed = false;
         ImGui.PushID("Key1");
@@ -120,19 +121,19 @@ public class MainWindow : Window
         return changed;
     }
     
-    private bool DrawKey(ref KeySetting setting)
+    private bool DrawKey(ref KeyboardSettingDto setting)
     {
         var changed = false;
 
-        if (ImGuiUtil.GenericEnumCombo("Modifier", 150f, setting.KeyModifier, out KeyModifierFlag mod))
+        if (ImGuiUtil.GenericEnumCombo("Modifier", 150f, setting.Modifier, out KeyModifierFlag mod))
         {
-            setting.KeyModifier = mod;
+            setting.Modifier = mod;
             changed = true;
         }
 
         ImGui.SameLine();
 
-        if (ImGuiUtil.GenericEnumCombo("Key", 150f, setting.Key, out SeVirtualKey key))
+        if (ImGuiUtil.GenericEnumCombo("Key", 150f, setting.Key, out KeyboardVirtualKey key))
         {
             setting.Key = key;
             changed = true;
@@ -141,19 +142,19 @@ public class MainWindow : Window
         return changed;
     }
 
-    private bool DrawGamepad(ref KeySetting setting)
+    private bool DrawGamepad(ref GamepadSettingDto setting)
     {
         var changed = false;
 
-        if (ImGuiUtil.GenericEnumCombo("Modifier", 150f, setting.GamepadModifier, out GamepadModifierFlag mod))
+        if (ImGuiUtil.GenericEnumCombo("Modifier", 150f, setting.Modifier, out GamepadModifierFlag mod))
         {
-            setting.GamepadModifier = mod;
+            setting.Modifier = mod;
             changed = true;
         }
 
         ImGui.SameLine();
 
-        if (ImGuiUtil.GenericEnumCombo("Key", 150f, setting.Key, out SeVirtualKey key))
+        if (ImGuiUtil.GenericEnumCombo("Key", 150f, setting.Key, out GamepadVirtualKey key))
         {
             setting.Key = key;
             changed = true;
