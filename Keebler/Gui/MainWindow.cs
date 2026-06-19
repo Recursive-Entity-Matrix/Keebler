@@ -17,6 +17,12 @@ public class MainWindow : Window
     {
         _config = config;
         _selector = new ProfileSelector(_config);
+        Size = new Vector2(600, 400);
+        SizeCondition = ImGuiCond.FirstUseEver;
+        SizeConstraints = new WindowSizeConstraints
+        {
+            MinimumSize = new Vector2(400, 300)
+        };
     }
 
     public override void Draw()
@@ -33,7 +39,7 @@ public class MainWindow : Window
         }
     }
 
-    private InputId _lastSelected = 0;
+    private InputId _selectedAddBinding = 0;
     private void DrawProfile(KeybindProfile selectorCurrent)
     {
         using var child = ImRaii.Child("Profile", new Vector2(0, 0), true, ImGuiWindowFlags.None);
@@ -55,21 +61,26 @@ public class MainWindow : Window
             ImGui.TextDisabled("Hold Ctrl to enable buttons");
         }
 
-        if (ImGuiUtil.GenericEnumCombo<InputId>("Add New Binding", 100f, _lastSelected, out var inputId))
+        if (ImGuiUtil.GenericEnumCombo<InputId>("Game Action", 350f, _selectedAddBinding, out var inputId, id => id.ToString().MakePretty()))
         {
-            _lastSelected = inputId;
-            selectorCurrent.Keybinds.TryAdd(inputId, new KeybindDto());
-            _config.Save();
+            _selectedAddBinding = inputId;
         }
         
-        using var child2 = ImRaii.Child("Keybinds", new Vector2(0, 0), true, ImGuiWindowFlags.None);
+        if (ImGui.Button("Add/Reset Binding", new Vector2(0, 0)))
+        {
+            selectorCurrent.Keybinds[_selectedAddBinding] = new KeybindDto();
+            _config.Save();
+            _selectedAddBinding = 0;
+        }
+        
+        using var bindsChild = ImRaii.Child("Keybinds", new Vector2(0, 0), true, ImGuiWindowFlags.None);
         foreach (var keybind in selectorCurrent.Keybinds)
         {
             using var id = ImRaii.PushId(keybind.Key.ToString());
-            ImGui.Text(keybind.Key.ToString());
+            ImGui.Text(keybind.Key.ToString().MakePretty());
             ImGui.Indent();
             var bind = keybind.Value;
-            if (DrawBinding(ref bind))
+            if (DrawBinding(bind))
             {
                 selectorCurrent.Keybinds[keybind.Key] = bind;
                 _config.Save();
@@ -79,53 +90,35 @@ public class MainWindow : Window
         }
     }
 
-    private bool DrawBinding(ref KeybindDto bind)
+    private static bool DrawBindingSection(string id, string label, Func<bool> drawContent)
     {
         var changed = false;
-        ImGui.PushID("Key1");
-        ImGui.Text("Key 1: ");
+        ImGui.PushID(id);
+        ImGui.Text(label);
         ImGui.Indent();
-        if (DrawKey(ref bind.KeySettings[0]))
-        {
-            changed = true;
-        }
-        ImGui.Unindent();
-        ImGui.PopID();
-        ImGui.PushID("Key2");
-        ImGui.Text("Key 2: ");
-        ImGui.Indent();
-        if (DrawKey(ref bind.KeySettings[1]))
-        {
-            changed = true;
-        }
-        ImGui.Unindent();
-        ImGui.PopID();
-        ImGui.PushID("Game1");
-        ImGui.Text("Gamepad 1: ");
-        ImGui.Indent();
-        if (DrawGamepad(ref bind.GamepadSettings[0]))
-        {
-            changed = true;
-        }
-        ImGui.Unindent();
-        ImGui.PopID();
-        ImGui.PushID("Game2");
-        ImGui.Text("Gamepad 2: ");
-        ImGui.Indent();
-        if (DrawGamepad(ref bind.GamepadSettings[1]))
-        {
-            changed = true;
-        }
+        changed |= drawContent();
         ImGui.Unindent();
         ImGui.PopID();
         return changed;
     }
-    
-    private bool DrawKey(ref KeyboardSettingDto setting)
+
+    private bool DrawBinding(KeybindDto bind)
     {
         var changed = false;
 
-        if (ImGuiUtil.GenericEnumCombo("Modifier", 150f, setting.Modifier, out KeyModifierFlag mod))
+        changed |= DrawBindingSection("Key1", "Key 1:", () => DrawKey(bind.KeySettings[0]));
+        changed |= DrawBindingSection("Key2", "Key 2:", () => DrawKey(bind.KeySettings[1]));
+        changed |= DrawBindingSection("Game1", "Gamepad 1:", () => DrawGamepad(bind.GamepadSettings[0]));
+        changed |= DrawBindingSection("Game2", "Gamepad 2:", () => DrawGamepad(bind.GamepadSettings[1]));
+
+        return changed;
+    }
+
+    private bool DrawKey(KeyboardSettingDto setting)
+    {
+        var changed = false;
+
+        if (ImGuiUtil.GenericEnumCombo("Modifier", 150f, setting.Modifier, out KeyModifierFlag mod, value => value.ToString().MakePretty()))
         {
             setting.Modifier = mod;
             changed = true;
@@ -133,7 +126,7 @@ public class MainWindow : Window
 
         ImGui.SameLine();
 
-        if (ImGuiUtil.GenericEnumCombo("Key", 150f, setting.Key, out KeyboardVirtualKey key))
+        if (ImGuiUtil.GenericEnumCombo("Key", 150f, setting.Key, out KeyboardVirtualKey key, value => value.ToString().MakePretty()))
         {
             setting.Key = key;
             changed = true;
@@ -142,11 +135,11 @@ public class MainWindow : Window
         return changed;
     }
 
-    private bool DrawGamepad(ref GamepadSettingDto setting)
+    private bool DrawGamepad(GamepadSettingDto setting)
     {
         var changed = false;
 
-        if (ImGuiUtil.GenericEnumCombo("Modifier", 150f, setting.Modifier, out GamepadModifierFlag mod))
+        if (ImGuiUtil.GenericEnumCombo("Modifier", 150f, setting.Modifier, out GamepadModifierFlag mod, value => value.ToString().MakePretty()))
         {
             setting.Modifier = mod;
             changed = true;
@@ -154,7 +147,7 @@ public class MainWindow : Window
 
         ImGui.SameLine();
 
-        if (ImGuiUtil.GenericEnumCombo("Key", 150f, setting.Key, out GamepadVirtualKey key))
+        if (ImGuiUtil.GenericEnumCombo("Key", 150f, setting.Key, out GamepadVirtualKey key, value => value.ToString().MakePretty()))
         {
             setting.Key = key;
             changed = true;
