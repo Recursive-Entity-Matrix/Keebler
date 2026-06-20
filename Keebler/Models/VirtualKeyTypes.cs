@@ -394,7 +394,7 @@ public enum KeyboardVirtualKey
 
 public enum GamepadVirtualKey
 {
-    PAD_NONE = 0,
+    NONE = 0,
     PAD_LMB = 160, // 0xA0
     PAD_MMB = 161, // 0xA1
     PAD_RMB = 162, // 0xA2
