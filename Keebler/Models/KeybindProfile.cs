@@ -7,7 +7,7 @@ public class KeybindProfile
 {
     public int Version { get; set; } = 1;
     public string Name { get; set; } = "New Keybind Profile";
-    public string? Description { get; set; }
+    public string Description { get; set; } = string.Empty;
     
     public Dictionary<InputId, KeybindDto> Keybinds { get; } = new();
     

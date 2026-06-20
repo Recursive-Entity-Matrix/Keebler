@@ -8,9 +8,7 @@ public class Config : IPluginConfiguration
 {
     public int Version { get; set; } = 1;
     public List<KeybindProfile> KeybindProfiles { get; set; } = new List<KeybindProfile>();
-    public ConfigTypes.FeedbackType SuccessFeedbackType { get; set; } = ConfigTypes.FeedbackType.Chat;
-    public ConfigTypes.FeedbackType FailureFeedbackType { get; set; } = ConfigTypes.FeedbackType.Chat;
-    public ConfigTypes.MacroFeedbackType MacroFeedbackType { get; set; } = ConfigTypes.MacroFeedbackType.SuccessAndFailure;
+    public bool FeedbackOnSuccess { get; set; } = true;
 
     public void Save()
     {
