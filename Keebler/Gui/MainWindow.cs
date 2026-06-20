@@ -18,7 +18,8 @@ public class MainWindow : Window
     private readonly Config _config;
     private readonly ConfigWindow _configWindow;
 
-    public MainWindow(Config config, ConfigWindow configWindow) : base("Keebler " + Assembly.GetExecutingAssembly().GetName().Version,
+    public MainWindow(Config config, ConfigWindow configWindow) : base(
+        "Keebler " + Assembly.GetExecutingAssembly().GetName().Version,
         ImGuiWindowFlags.None)
     {
         _config = config;
@@ -59,6 +60,7 @@ public class MainWindow : Window
 
     private InputId _selectedAddBinding = 0;
     private InputId? _selectedRemoveBinding = null;
+    private string _filter = string.Empty;
 
     private void DrawProfile(KeybindProfile selectorCurrent)
     {
@@ -71,7 +73,7 @@ public class MainWindow : Window
             ImGui.SetClipboardText(base64);
             Services.ChatGui.Print("Profile data copied to clipboard");
         }
-        
+
         var name = selectorCurrent.Name;
         if (ImGui.InputText("Name", ref name, 100))
         {
@@ -125,10 +127,16 @@ public class MainWindow : Window
             ImGui.TextDisabled("Hold Ctrl to enable buttons");
         }
 
+        ImGui.InputText("Filter Keybinds", ref _filter, 100);
+
         using (ImRaii.Child("Keybinds", new Vector2(0, 0), true, ImGuiWindowFlags.None))
         {
             foreach (var (key, bind) in selectorCurrent.Keybinds)
             {
+                if (!string.IsNullOrEmpty(_filter) &&
+                    !key.ToString().Contains(_filter, StringComparison.InvariantCultureIgnoreCase))
+                    continue;
+                
                 using var id = ImRaii.PushId(key.ToString());
                 ImGui.Text(key.ToString().MakePretty());
                 ImGui.Indent();
@@ -139,7 +147,7 @@ public class MainWindow : Window
                 }
 
                 ImGui.Unindent();
-                
+
                 using (ImRaii.PushFont(UiBuilder.IconFont))
                 {
                     if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString(), new Vector2(0, 0)))
@@ -147,6 +155,7 @@ public class MainWindow : Window
                         _selectedRemoveBinding = key;
                     }
                 }
+
                 ImGuiUtil.HoverTooltip("Remove this keybind");
 
                 ImGui.Separator();
