@@ -1,3 +1,4 @@
+using Dalamud.Game.ClientState.Conditions;
 using FFXIVClientStructs.FFXIV.Client.System.Input;
 using FFXIVClientStructs.FFXIV.Client.UI;
 
@@ -13,6 +14,11 @@ public class KeybindProfile
     
     public unsafe void SetKeybinds()
     {
+        if (Services.Condition[ConditionFlag.InCombat])
+        {
+            Services.ChatGui.PrintError("Cannot apply profiles in combat");
+            return;
+        }
         foreach (var keybind in Keybinds)
         {
             try

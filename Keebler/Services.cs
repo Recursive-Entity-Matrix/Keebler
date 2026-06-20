@@ -22,4 +22,5 @@ public class Services
     [PluginService] public static ISeStringEvaluator SeStringEvaluator { get; private set; } = null!;
     [PluginService] public static ITargetManager TargetManager { get; private set; } = null!;
     [PluginService] public static ITextureProvider TextureProvider { get; set; } = null!;
+    [PluginService] public static ICondition Condition { get; set; } = null!;
 }
