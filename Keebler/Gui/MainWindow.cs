@@ -2,6 +2,7 @@ using System.Buffers.Text;
 using System.Numerics;
 using System.Reflection;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
 using FFXIVClientStructs.FFXIV.Client.System.Input;
@@ -106,6 +107,11 @@ public class MainWindow : Window
         if (ImGuiUtil.DrawDisabledButton("Apply to game", new Vector2(0, 0),
                 "Apply the profile to your current in-game settings", !hotkeysHeld))
         {
+            if (Services.Condition[ConditionFlag.InCombat])
+            {
+                Services.ChatGui.PrintError("Cannot apply profiles in combat");
+                return;
+            }
             selectorCurrent.SetKeybinds();
             if (_config.FeedbackOnSuccess)
             {

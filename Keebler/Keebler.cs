@@ -1,4 +1,5 @@
-﻿using Dalamud.Game.Command;
+﻿using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.Command;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using Keebler.Gui;
@@ -74,6 +75,11 @@ public class Keebler : IDalamudPlugin
                 if (profile == null)
                 {
                     Services.ChatGui.PrintError($"Profile '{name}' not found");
+                    return;
+                }
+                if (Services.Condition[ConditionFlag.InCombat])
+                {
+                    Services.ChatGui.PrintError("Cannot apply profiles in combat");
                     return;
                 }
                 profile.SetKeybinds();

@@ -14,11 +14,6 @@ public class KeybindProfile
     
     public unsafe void SetKeybinds()
     {
-        if (Services.Condition[ConditionFlag.InCombat])
-        {
-            Services.ChatGui.PrintError("Cannot apply profiles in combat");
-            return;
-        }
         foreach (var keybind in Keybinds)
         {
             try
