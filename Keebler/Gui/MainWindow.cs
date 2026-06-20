@@ -1,3 +1,4 @@
+using System.Buffers.Text;
 using System.Numerics;
 using System.Reflection;
 using Dalamud.Bindings.ImGui;
@@ -5,6 +6,7 @@ using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
 using FFXIVClientStructs.FFXIV.Client.System.Input;
 using Keebler.Models;
+using Newtonsoft.Json;
 using OtterGui;
 using OtterGui.Raii;
 
@@ -62,6 +64,14 @@ public class MainWindow : Window
     {
         using var child = ImRaii.Child("Profile", new Vector2(0, 0), true, ImGuiWindowFlags.None);
 
+        if (ImGui.Button("Export Profile"))
+        {
+            var json = JsonConvert.SerializeObject(selectorCurrent);
+            var base64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(json));
+            ImGui.SetClipboardText(base64);
+            Services.ChatGui.Print("Profile data copied to clipboard");
+        }
+        
         var name = selectorCurrent.Name;
         if (ImGui.InputText("Name", ref name, 100))
         {

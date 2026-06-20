@@ -1,3 +1,4 @@
+using System.Text;
 using Dalamud.Bindings.ImGui;
 using Keebler.Models;
 using Newtonsoft.Json;
@@ -22,7 +23,8 @@ public class ProfileSelector(Config config) : ItemSelector<KeybindProfile>(confi
 
     protected override bool OnClipboardImport(string name, string data)
     {
-        var jObj = JsonConvert.DeserializeObject<KeybindProfile>(data);
+        var base64 = Convert.FromBase64String(data);
+        var jObj = JsonConvert.DeserializeObject<KeybindProfile>(Encoding.UTF8.GetString(base64));
         if (jObj == null)
         {
             Services.ChatGui.PrintError("Failed to import keybind profile: Invalid data");
