@@ -10,6 +10,7 @@ using Keebler.Models;
 using Newtonsoft.Json;
 using OtterGui;
 using OtterGui.Raii;
+using ImGuiClip = Dalamud.Interface.Utility.ImGuiClip;
 
 namespace Keebler.Gui;
 
@@ -94,6 +95,8 @@ public class MainWindow : Window
         {
             _selectedAddBinding = inputId;
         }
+        
+        ImGui.Spacing();
 
         if (ImGui.Button("Add/Reset Binding", new Vector2(0, 0)))
         {
@@ -132,39 +135,49 @@ public class MainWindow : Window
             ImGui.SameLine();
             ImGui.TextDisabled("Hold Ctrl to enable buttons");
         }
+        
+        ImGui.Spacing();
+        ImGui.Separator();
+        ImGui.Spacing();
 
         ImGui.InputText("Filter Keybinds", ref _filter, 100);
 
         using (ImRaii.Child("Keybinds", new Vector2(0, 0), true, ImGuiWindowFlags.None))
         {
-            foreach (var (key, bind) in selectorCurrent.Keybinds)
+            ImGuiListClipper clipper = new ImGuiListClipper();
+            clipper.Begin(selectorCurrent.Keybinds.Count);
+            while (clipper.Step())
             {
-                if (!string.IsNullOrEmpty(_filter) &&
-                    !key.ToString().Contains(_filter, StringComparison.InvariantCultureIgnoreCase))
-                    continue;
-                
-                using var id = ImRaii.PushId(key.ToString());
-                ImGui.Text(key.ToString().MakePretty());
-                ImGui.Indent();
-                if (DrawBinding(bind))
+                for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
                 {
-                    selectorCurrent.Keybinds[key] = bind;
-                    _config.Save();
-                }
-
-                ImGui.Unindent();
-
-                using (ImRaii.PushFont(UiBuilder.IconFont))
-                {
-                    if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString(), new Vector2(0, 0)))
+                    var (key, bind) = selectorCurrent.Keybinds.ElementAt(i);
+                    if (!string.IsNullOrEmpty(_filter) &&
+                        !key.ToString().Contains(_filter, StringComparison.InvariantCultureIgnoreCase))
+                        continue;
+                    
+                    using var id = ImRaii.PushId(key.ToString());
+                    ImGui.Text(key.ToString().MakePretty());
+                    ImGui.Indent();
+                    if (DrawBinding(bind))
                     {
-                        _selectedRemoveBinding = key;
+                        selectorCurrent.Keybinds[key] = bind;
+                        _config.Save();
                     }
+
+                    ImGui.Unindent();
+
+                    using (ImRaii.PushFont(UiBuilder.IconFont))
+                    {
+                        if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString(), new Vector2(0, 0)))
+                        {
+                            _selectedRemoveBinding = key;
+                        }
+                    }
+
+                    ImGuiUtil.HoverTooltip("Remove this keybind");
+
+                    ImGui.Separator();
                 }
-
-                ImGuiUtil.HoverTooltip("Remove this keybind");
-
-                ImGui.Separator();
             }
         }
 
